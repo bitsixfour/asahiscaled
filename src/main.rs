@@ -61,7 +61,7 @@ fn render(frame: &mut Frame, sens: &Sens) {
     let bottom_inner = bottom_block.inner(bottom);
     frame.render_widget(bottom_block, bottom);
 
-    let footer = Paragraph::new("Status: running").wrap(Wrap { trim: true });
+    let footer = Paragraph::new("Status: running \n {}").wrap(Wrap { trim: true });
     frame.render_widget(footer, bottom_inner);
 }
 
@@ -75,4 +75,15 @@ fn should_quit() -> Result<bool> {
         }
     }
     Ok(false)
+}
+
+fn get_status(sens: &Sens) -> &str {
+    let str: i32 = sens.get_pressure();
+    match str {
+        0..=10 => "put finger on haptic pad",
+        10..=30 => "place object: try to minimize force",
+        30..=9999 => "Okkei",
+        _ => "no force exerted",
+
+    }
 }
