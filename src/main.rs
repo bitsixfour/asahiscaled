@@ -5,11 +5,14 @@ use ratatui::{
     widgets::{Block, Chart, Dataset, GraphType, Borders, Axis, Paragraph, Wrap},
     DefaultTerminal, Frame,
 };
+use std::collections::VecDeque;
 
 use std::time::Duration;
 use ratatui::symbols::Marker;
 mod sens;
 use sens::Sens;
+mod approx;
+use approx::Graph;
 
 type Result<T> = anyhow::Result<T>;
 
@@ -60,13 +63,12 @@ fn render(frame: &mut Frame, sens: &Sens) {
     let middle_inner = middle_block.inner(middle);
     frame.render_widget(middle_block, middle);
 
-
-
    // top
     let weight = sens.calc_weight();
     let text = format!(
-        "Device: {}  | Pressure: {} Status: Runing \nFolder: /dev/input/event2
+        "Device: {}  | Pressure: {} Status: Runing | Folder: /dev/input/event2 \n
         Weight: {} kg \n
+        Status: running\n
         State: {}
         \n\nPress 'q' to quit.",
 
@@ -87,27 +89,19 @@ fn render(frame: &mut Frame, sens: &Sens) {
 
     let footer = Paragraph::new(para_two).wrap(Wrap { trim: true });
     frame.render_widget(footer, bottom_inner);
-    render_chart(frame, middle_inner);
+    let mut vec = VecDeque::<(f64, f64)>::new();
+    render_chart(frame, middle_inner, &vec);
 }
 
-pub fn render_chart(frame: &mut Frame, area: Rect) {
+pub fn render_chart(frame: &mut Frame, area: Rect, vec: &VecDeque<(f64, f64)>) {
+    let data: Vec<(f64, f64)> = vec.iter().copied().collect();
+
     let dataset = Dataset::default()
         .name("Stonks")
         .marker(Marker::Braille)
         .graph_type(GraphType::Line)
         .style(Color::Blue)
-        .data(&[
-            (0.0, 1.0),
-            (1.0, 3.0),
-            (2.0, 0.5),
-            (3.0, 2.0),
-            (4.0, 0.8),
-            (5.0, 4.0),
-            (6.0, 1.0),
-            (7.0, 6.0),
-            (8.0, 3.0),
-            (10.0, 10.0),
-        ]);
+        .data(&data);
 
     let x_axis = Axis::default()
         .title("Hustle".blue())
@@ -122,6 +116,14 @@ pub fn render_chart(frame: &mut Frame, area: Rect) {
     let chart = Chart::new(vec![dataset]).x_axis(x_axis).y_axis(y_axis);
     frame.render_widget(chart, area);
 }
+
+
+
+
+
+
+
+
 fn should_quit() -> Result<bool> {
     if event::poll(Duration::from_millis(125))? {
         let ev = event::read()?;
@@ -133,6 +135,9 @@ fn should_quit() -> Result<bool> {
     }
     Ok(false)
 }
+
+
+
 
 fn get_status(sens: &Sens) -> &str {
     let str: i32 = sens.get_pressure();
