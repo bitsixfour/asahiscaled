@@ -8,7 +8,7 @@ pub struct Sens {
 }
 
 impl Sens {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new() -> anyhow::Result<Self> {
         let mut device = Device::open("/dev/input/event2")?;
         let name = device.name().unwrap_or("unknown").to_string();
 

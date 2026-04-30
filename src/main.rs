@@ -1,30 +1,78 @@
-use evdev::{Device, EventSummary, AbsoluteAxisCode};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    style::Stylize,
-    symbols::border,
-    text::{Line, Text},
-    widgets::{Block, Paragraph, Widget},
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Style},
+    widgets::{Block, Borders, Paragraph, Wrap},
     DefaultTerminal, Frame,
 };
+use std::time::Duration;
 
 mod sens;
-use sens::sens;
+use sens::Sens;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut trackpad = Device::open("/dev/input/event2")?;
-    let status: &str = trackpad.name().unwrap_or("I don't know");
+type Result<T> = anyhow::Result<T>;
 
-    println!("starting function on {}", status);
+fn main() -> Result<()> {
+    ratatui::run(run)?;
+    Ok(())
+}
 
+fn run(terminal: &mut DefaultTerminal) -> Result<()> {
+    let sens = Sens::new()?;
     loop {
-        for ev in trackpad.fetch_events()? {
-            if let EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_MT_PRESSURE, value) =
-            ev.destructure() {
-                println!("pressure = {value}"); // prints 12 for your example
-            }
+        terminal.draw(|frame| render(frame, &sens))?;
+        if should_quit()? {
+            break;
         }
     }
     Ok(())
+}
+
+fn render(frame: &mut Frame, sens: &Sens) {
+    let pressure = sens.get_pressure();
+    let area = frame.area();
+
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
+        .split(area);
+
+    let top = chunks[0];
+    let bottom = chunks[1];
+
+    let top_block = Block::default()
+        .title("Sense")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White));
+    let top_inner = top_block.inner(top);
+    frame.render_widget(top_block, top);
+
+    let text = format!(
+        "Device: {}\nPressure: {}\n\nPress 'q' to quit.",
+        sens.name, pressure
+    );
+    let paragraph = Paragraph::new(text).wrap(Wrap { trim: true });
+    frame.render_widget(paragraph, top_inner);
+
+    let bottom_block = Block::default()
+        .title("Info")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White));
+    let bottom_inner = bottom_block.inner(bottom);
+    frame.render_widget(bottom_block, bottom);
+
+    let footer = Paragraph::new("Status: running").wrap(Wrap { trim: true });
+    frame.render_widget(footer, bottom_inner);
+}
+
+fn should_quit() -> Result<bool> {
+    if event::poll(Duration::from_millis(125))? {
+        let ev = event::read()?;
+        if let Event::Key(key) = ev {
+            if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
 }

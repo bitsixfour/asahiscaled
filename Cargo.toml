@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.86"
+crossterm = "0.28.1"
 evdev = "0.13.2"
 ratatui = "0.30.0"
