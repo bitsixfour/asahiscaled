@@ -64,7 +64,9 @@ fn render(frame: &mut Frame, sens: &Sens) {
     let weight = sens.calc_weight();
     let text = format!(
         "Device: {}\nPressure: {}\nFolder: /dev/input/event2
-        Weight: {} kg
+        Weight: {} kg \n
+        Status: running\m
+        State: {}
         \n\nPress 'q' to quit.",
 
         sens.name, pressure, weight
@@ -73,7 +75,7 @@ fn render(frame: &mut Frame, sens: &Sens) {
     frame.render_widget(paragraph, top_inner);
 
     let bottom_block = Block::default()
-        .title("Info")
+        .title("Battery")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::White));
     let bottom_inner = bottom_block.inner(bottom);
