@@ -7,13 +7,12 @@ pub struct Graph {
     pub pressure: i32,
 }
 
-pub fn sort_graph(mut vec: Vec<(f64, f64)>, pres: i32) -> Vec<(f64,f64)> {
-    let len: i32 = vec.len() as i32;
-    let turple: (f64, f64) = (len as f64, pres.into());
-    while len > 10 {
+
+pub fn sort_graph(vec: &mut Vec<(f64, f64)>, pres: i32) -> &mut Vec<(f64,f64)> {
+    let tuple: (f64, f64) = (vec.len() as f64, pres as f64);
+    while vec.len() > 100 {
         vec.remove(0);
     }
-    vec.push(turple);
+    vec.push(tuple);
     vec
-
 }

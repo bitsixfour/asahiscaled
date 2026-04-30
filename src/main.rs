@@ -22,9 +22,10 @@ fn main() -> Result<()> {
 }
 
 fn run(terminal: &mut DefaultTerminal) -> Result<()> {
-    let sens = Sens::new()?;
+    let mut sens = Sens::new()?;
+    let mut vec: Vec<(f64, f64)> = Vec::new();
     loop {
-        terminal.draw(|frame| render(frame, &sens))?;
+        terminal.draw(|frame| render(frame, &sens, &mut vec))?;
         if should_quit()? {
             break;
         }
@@ -32,7 +33,7 @@ fn run(terminal: &mut DefaultTerminal) -> Result<()> {
     Ok(())
 }
 
-fn render(frame: &mut Frame, sens: &Sens) {
+fn render(frame: &mut Frame, sens: &Sens, vec: &mut Vec<(f64,f64)>) {
     // refactor some point
     let pressure = sens.get_pressure();
     let area = frame.area();
@@ -89,12 +90,11 @@ fn render(frame: &mut Frame, sens: &Sens) {
 
     let footer = Paragraph::new(para_two).wrap(Wrap { trim: true });
     frame.render_widget(footer, bottom_inner);
-    let mut vec: Vec<(f64, f64)> = Vec::new();
-    vec = sort_graph(vec, pressure);
+    sort_graph(vec, pressure);
     render_chart(frame, middle_inner, vec, pressure);
 }
 
-pub fn render_chart(frame: &mut Frame, area: Rect, mut vec: Vec<(f64, f64)>, pres: i32) {
+pub fn render_chart(frame: &mut Frame, area: Rect, mut vec: &Vec<(f64, f64)>, pres: i32) {
     let data = sort_graph(vec, pres);
 
     let dataset = Dataset::default()
@@ -102,7 +102,7 @@ pub fn render_chart(frame: &mut Frame, area: Rect, mut vec: Vec<(f64, f64)>, pre
         .marker(Marker::Braille)
         .graph_type(GraphType::Line)
         .style(Color::Blue)
-        .data(&data);
+        .data(data);
 
     let x_axis = Axis::default()
         .title("Hustle".blue())
