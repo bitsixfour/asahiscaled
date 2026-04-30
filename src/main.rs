@@ -42,20 +42,40 @@ fn render(frame: &mut Frame, sens: &Sens, vec: &mut Vec<(f64,f64)>) {
         .direction(Direction::Vertical)
         .constraints(
             [Constraint::Percentage(30),
-            Constraint::Percentage(40),
-            Constraint::Percentage(30)])
+            Constraint::Percentage(35),
+            Constraint::Percentage(35)])
         .split(area);
 
     let top = chunks[0];
+    let top_chunks = Layout::default()
+          .direction(Direction::Horizontal) // or Vertical
+          .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+          .split(top);
+
+    let wei = top_chunks[0];
+    let bat = top_chunks[1];
+
     let middle = chunks[1];
     let bottom = chunks[2];
 
+
+
+
+
+
     let top_block = Block::default()
-        .title("Sense")
+        .title("weight")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::White));
-    let top_inner = top_block.inner(top);
-    frame.render_widget(top_block, top);
+    let top_inner = top_block.inner(wei);
+    frame.render_widget(top_block, wei);
+
+    let top_block2 = Block::default()
+        .title("bat")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White));
+    let top_inner2 = top_block2.inner(bat);
+    frame.render_widget(top_block2, bat);
 
     let middle_block = Block::default()
         .title("graph weight view ")
@@ -67,14 +87,15 @@ fn render(frame: &mut Frame, sens: &Sens, vec: &mut Vec<(f64,f64)>) {
    // top
     let weight = sens.calc_weight();
     let text = format!(
-        "Device: {}  | Pressure: {} Status: Runing | Folder: /dev/input/event2 \n
-        Weight: {} kg \n
-        Status: running\n
-        State: {}
-        \n\nPress 'q' to quit.",
+        "Device: {}  \n Pressure: {}  \n Status: Runing \n Folder: /dev/input/event2 \n
+        Weight: {} kg
+        Press 'q' to quit.",
 
-        sens.name, pressure, weight, get_status(sens)
+        sens.name, pressure, weight,
     );
+    let text2 = format!("aklhakllckalakslkasdfhkashlkflkasd");
+    let para2 = Paragraph::new(text2).wrap(Wrap { trim: true});
+    frame.render_widget(para2, top_inner2);
     let paragraph = Paragraph::new(text).wrap(Wrap { trim: true });
     frame.render_widget(paragraph, top_inner);
 
@@ -85,7 +106,7 @@ fn render(frame: &mut Frame, sens: &Sens, vec: &mut Vec<(f64,f64)>) {
     let bottom_inner = bottom_block.inner(bottom);
     frame.render_widget(bottom_block, bottom);
 
-    let para_two = format!("Status: running \n State: {}", get_status(sens));
+    let para_two = format!("Status: running");
 
 
     let footer = Paragraph::new(para_two).wrap(Wrap { trim: true });
@@ -95,23 +116,22 @@ fn render(frame: &mut Frame, sens: &Sens, vec: &mut Vec<(f64,f64)>) {
 
 pub fn render_chart(frame: &mut Frame, area: Rect, vec: &mut Vec<(f64, f64)>, pres: i32) {
     let data = sort_graph(vec, pres);
-
     let dataset = Dataset::default()
-        .name("Stonks")
+        .name("WEIGHT!!!")
         .marker(Marker::Braille)
         .graph_type(GraphType::Line)
-        .style(Color::Blue)
+        .style(Color::Red)
         .data(data);
 
     let x_axis = Axis::default()
-        .title("Hustle".blue())
-        .bounds([0.0, 10.0])
-        .labels(["0%", "50%", "100%"]);
+        .title("time (obviously)".red())
+        .bounds([0.0, 100.0])
+        .labels(["0%", "100"]);
 
     let y_axis = Axis::default()
-        .title("Profit".blue())
-        .bounds([0.0, 10.0])
-        .labels(["0", "5", "10"]);
+        .title("".red())
+        .bounds([0.0, 1000.0])
+        .labels(["0", "1000"]);
 
     let chart = Chart::new(vec![dataset]).x_axis(x_axis).y_axis(y_axis);
     frame.render_widget(chart, area);
