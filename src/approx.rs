@@ -7,13 +7,13 @@ pub struct Graph {
     pub pressure: i32,
 }
 
-fn sort_graph(vec: VecDeque<(f64, f64)>) -> VecDeque<(f64, f64)>{
-    let len: i32 = vec.len();
-    let var: i32 =
-    match len {
-        11..i32::MAX => vec.truncate(len - 10),
-        0..10 =>
-
+pub fn sort_graph(mut vec: Vec<(f64, f64)>, pres: i32) -> Vec<(f64,f64)> {
+    let len: i32 = vec.len() as i32;
+    let turple: (f64, f64) = (len as f64, pres.into());
+    while len > 10 {
+        vec.remove(0);
     }
+    vec.push(turple);
+    vec
 
 }
