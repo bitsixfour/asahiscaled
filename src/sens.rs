@@ -75,7 +75,6 @@ fn pick_event_device() -> anyhow::Result<String> {
         }
     }
 
-    // Fall back to scanning /dev/input/event* and prefer names that look like a touchpad.
     let mut first_event: Option<String> = None;
     if let Ok(entries) = fs::read_dir("/dev/input") {
         for entry in entries.flatten() {
@@ -101,6 +100,6 @@ fn pick_event_device() -> anyhow::Result<String> {
     }
 
     bail!(
-        "no /dev/input/event* device found; set ASAHI_TRACKPAD_EVENT=/dev/input/eventX (try `ls /dev/input`)"
+        "DNE"
     )
 }

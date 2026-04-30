@@ -15,6 +15,7 @@ mod bat;
 use bat::Battery;
 mod approx;
 use approx::sort_graph;
+use approx::sort_graph2;
 
 type Result<T> = anyhow::Result<T>;
 
@@ -38,7 +39,7 @@ fn run(terminal: &mut DefaultTerminal) -> Result<()> {
     Ok(())
 }
 
-fn render(frame: &mut Frame, sens: &Sens, battery: &Battery, vec: &mut Vec<(f64,f64)>) {
+fn render(frame: &mut Frame, sens: &Sens, battery: &Battery, vec: &mut Vec<(f64,f64)>, vecbat: &mut Vec<(f64,f64)>) {
     // refactor some point
     let pressure = sens.get_pressure();
     let area = frame.area();
@@ -119,26 +120,14 @@ fn render(frame: &mut Frame, sens: &Sens, battery: &Battery, vec: &mut Vec<(f64,
     let bottom_inner = bottom_block.inner(bottom);
     frame.render_widget(bottom_block, bottom);
 
-    let para_two = format!(
-        "Battery: {} | {:.0}% | {:+.2} W | {:.2} Wh | health {:.0}%",
-        battery.status,
-        battery.capacity,
-        battery.watt,
-        battery.rm_wh,
-        battery.health
-    );
-
-
-    let footer = Paragraph::new(para_two).wrap(Wrap { trim: true });
-    frame.render_widget(footer, bottom_inner);
     render_chart(frame, middle_inner, vec, pressure);
-    render_chart2(frame, middle_inner, vec2, battery.watt);
+    render_chart2(frame, bottom_inner, vecbat, battery.watt.abs());
 
 }
 
 
 pub fn render_chart2(frame: &mut Frame, area: Rect, vec2: &mut Vec<(f64, f64)>, pres: f64) {
-    let data = sort_graph(vec, pres);
+    let data = sort_graph2(vec2, pres);
     let dataset = Dataset::default()
         .name("bat")
         .marker(Marker::Braille)
@@ -153,7 +142,7 @@ pub fn render_chart2(frame: &mut Frame, area: Rect, vec2: &mut Vec<(f64, f64)>, 
 
     let y_axis = Axis::default()
         .title("".green())
-        .bounds([0.0, 1000.0])
+        .bounds([0.0, 15.0])
         .labels(["0", "1000"]);
 
     let chart = Chart::new(vec![dataset]).x_axis(x_axis).y_axis(y_axis);
